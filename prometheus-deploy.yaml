@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      containers:
+        - name: prometheusc
+          image: satyams1999/prometheus:latest
+          ports:
+          - containerPort: 9090
+            name: prometheus
+          volumeMounts:
+          - name: prometheus-pvc
+            mountPath: /prometheus-2.28.1.linux-amd64/data
+          imagePullPolicy: "Always"
+      volumes:
+      - name: prometheus-pvc
+        persistentVolumeClaim:
+          claimName: volumeclaim-prometheus
+      nodeSelector:
+        kubernetes.io/hostname: minikube
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  labels:
+    app: prometheus
+spec:
+  ports:
+    - port: 9090
+      protocol: TCP
+      targetPort: 9090
+  selector:
+    app: prometheus  
+  type: NodePort
+---
